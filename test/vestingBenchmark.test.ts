@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-//import type { MyToken, Vesting } from "../typechain-types";
 
 describe("Vesting Contract Test", function () {
     let token: any;
@@ -8,7 +7,7 @@ describe("Vesting Contract Test", function () {
     let owner: string;
     let beneficiary: string;
 
-    const ONE_MONTH = 30 * 24 * 60 * 60; // seconds
+    const ONE_MONTH = 30 * 24 * 60 * 60;
     let start: number;
 
 
@@ -17,23 +16,21 @@ describe("Vesting Contract Test", function () {
         owner = await signers[0].getAddress();
         beneficiary = await signers[1].getAddress();
 
-        // Deploy MyToken
+
         const TokenFactory = await ethers.getContractFactory("MyToken");
-        token = (await TokenFactory.deploy()); //as unknown as MyToken;
+        token = (await TokenFactory.deploy());
         await token.waitForDeployment();
 
-        // Mint 1200 tokens to owner
+
         await token.mint(owner, ethers.parseUnits("1200", 18));
 
-        // Deploy Vesting
         const VestingFactory = await ethers.getContractFactory("Vesting");
-        vesting = (await VestingFactory.deploy(token.target)); //as unknown as Vesting;
+        vesting = (await VestingFactory.deploy(token.target));
         await vesting.waitForDeployment();
 
-        // Transfer tokens to Vesting contract so it has balance
+
         await token.transfer(vesting.target, ethers.parseUnits("1200", 18));
 
-        // Create vesting schedule
         const latestBlock = await ethers.provider.getBlock("latest");
         start = latestBlock!.timestamp;
 
@@ -66,7 +63,6 @@ describe("Vesting Contract Test", function () {
         const vested = await vesting.vestedAmount(beneficiary);
         const expected = ethers.parseUnits("400", 18);
 
-        // Use closeTo to avoid tiny rounding errors
         expect(vested).to.equal(expected);
 
     });

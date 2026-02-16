@@ -10,7 +10,7 @@ dotenv.config();
 const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
 const vestingAddress = process.env.VESTING_ADDRESS!;
 
-// ABI of the Vesting contract events
+
 const abi = [
     "event VestingScheduleCreated(address indexed beneficiary,uint256 start,uint256 cliff,uint256 duration,uint256 amount)",
     "event TokenReleased(address indexed beneficiary,uint256 amount)"
@@ -39,14 +39,14 @@ async function handleVestingCreated(
             cliff?.toString() ?? "0",
             duration?.toString() ?? "0",
             amount?.toString() ?? "0",
-            "0", // claimed column
+            "0",
             event.transactionHash ?? null,
             event.blockNumber ?? null
         ]
     );
 
     await db.end();
-    console.log("📌 New vesting stored:", beneficiary);
+    console.log(" New vesting stored:", beneficiary);
 }
 
 // Handle TokenReleased event
@@ -57,13 +57,13 @@ async function handleTokenReleased(
 ) {
     const db = await getDb();
 
-    // Update claimed in vesting table
+
     await db.execute(
         `UPDATE vesting SET claimed = CAST(claimed AS UNSIGNED) + ? WHERE beneficiary = ?`,
         [amount?.toString() ?? "0", beneficiary?.toLowerCase() ?? null]
     );
 
-    // Insert into release table
+
     await db.execute(
         `INSERT INTO release (beneficiary, amount, tx_hash, block_number) VALUES (?, ?, ?, ?)`,
         [
@@ -75,15 +75,14 @@ async function handleTokenReleased(
     );
 
     await db.end();
-    console.log("💰 Tokens released:", beneficiary);
+    console.log(" Tokens released:", beneficiary);
 }
 
 async function main() {
-    console.log("🔄 Syncing past events...");
+    console.log(" Syncing past events...");
 
     const currentBlock = await provider.getBlockNumber();
 
-    // Backfill past VestingScheduleCreated events
     const createdEvents = await contract.queryFilter("VestingScheduleCreated", 0, currentBlock);
     for (const e of createdEvents) {
         const ev: any = e; // cast to any
@@ -112,7 +111,7 @@ async function main() {
         );
     }
 
-    console.log("✅ Backfill complete. Listening for new events...");
+    console.log(" Backfill complete. Listening for new events...");
 
     // Listen for new events
     contract.on("VestingScheduleCreated", async (beneficiary, start, cliff, duration, amount, ev) => {

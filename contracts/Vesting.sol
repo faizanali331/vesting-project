@@ -32,7 +32,6 @@ contract Vesting is Ownable, ReentrancyGuard {
     mapping(address => VestingSchedule) public VestingSchedules;
 
     function createVestingSchedule(
-        // to be corrected
         address beneficiary,
         uint256 start,
         uint256 cliffDuration,
