@@ -56,13 +56,10 @@ async function handleTokenReleased(
     event: { transactionHash: string | null; blockNumber: number | null }
 ) {
     const db = await getDb();
-
-
     await db.execute(
         `UPDATE vesting SET claimed = CAST(claimed AS UNSIGNED) + ? WHERE beneficiary = ?`,
         [amount?.toString() ?? "0", beneficiary?.toLowerCase() ?? null]
     );
-
 
     await db.execute(
         `INSERT INTO release (beneficiary, amount, tx_hash, block_number) VALUES (?, ?, ?, ?)`,

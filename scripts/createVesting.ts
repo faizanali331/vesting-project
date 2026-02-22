@@ -25,7 +25,7 @@ async function main() {
     await transferTx.wait();
     console.log(" Transfer successful");
 
-    const now = Math.floor(Date.now() / 1000);
+    const now = Math.floor(Date.now() / 1000) + 10;
     const cliff = 60;
     const duration = 600;
 

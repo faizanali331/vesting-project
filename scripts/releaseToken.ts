@@ -22,7 +22,7 @@ async function main() {
 
     const beneficiaryAddress = await beneficiary.getAddress();
     const claimable = await vesting.vestedAmount(beneficiaryAddress);
-    console.log("💰 Claimable tokens:", claimable.toString());
+    console.log(" Claimable tokens:", claimable.toString());
 
     if (claimable > 0n) {
         const tx = await vestingAsBeneficiary.release(claimable);
