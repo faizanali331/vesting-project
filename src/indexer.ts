@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
 import { getDb } from "./db";
-import { VestingEntity } from "../src/entity/VestingEntity";
-import { ReleaseEntity } from "../src/entity/ReleaseEntity";
+// import { VestingEntity } from "../src/entity/VestingEntity";
+// import { ReleaseEntity } from "../src/entity/ReleaseEntity";
 
 dotenv.config();
 
@@ -57,12 +57,12 @@ async function handleTokenReleased(
 ) {
     const db = await getDb();
     await db.execute(
-        `UPDATE vesting SET claimed = CAST(claimed AS UNSIGNED) + ? WHERE beneficiary = ?`,
+        `UPDATE vesting SET claimed = CAST(claimed AS DECIMAL(65,0)) + ? WHERE beneficiary = ?`,
         [amount?.toString() ?? "0", beneficiary?.toLowerCase() ?? null]
     );
 
     await db.execute(
-        `INSERT INTO release (beneficiary, amount, tx_hash, block_number) VALUES (?, ?, ?, ?)`,
+        `INSERT INTO \`release\` (beneficiary, amount, tx_hash, block_number) VALUES (?, ?, ?, ?)`,
         [
             beneficiary?.toLowerCase() ?? null,
             amount?.toString() ?? "0",
@@ -111,6 +111,17 @@ async function main() {
     console.log(" Backfill complete. Listening for new events...");
 
     // Listen for new events
+    // contract.on("VestingScheduleCreated", async (beneficiary, start, cliff, duration, amount, ev) => {
+    //     await handleVestingCreated(
+    //         beneficiary,
+    //         start,
+    //         cliff,
+    //         duration,
+    //         amount,
+    //         { transactionHash: ev?.transactionHash ?? null, blockNumber: ev?.blockNumber ?? null }
+    //     );
+    // });
+
     contract.on("VestingScheduleCreated", async (beneficiary, start, cliff, duration, amount, ev) => {
         await handleVestingCreated(
             beneficiary,
@@ -118,15 +129,29 @@ async function main() {
             cliff,
             duration,
             amount,
-            { transactionHash: ev?.transactionHash ?? null, blockNumber: ev?.blockNumber ?? null }
+            {
+                transactionHash: ev?.log?.transactionHash ?? null,
+                blockNumber: ev?.log?.blockNumber ?? null
+            }
         );
     });
+
+    // contract.on("TokenReleased", async (beneficiary, amount, ev) => {
+    //     await handleTokenReleased(
+    //         beneficiary,
+    //         amount,
+    //         { transactionHash: ev?.transactionHash ?? null, blockNumber: ev?.blockNumber ?? null }
+    //     );
+    // });
 
     contract.on("TokenReleased", async (beneficiary, amount, ev) => {
         await handleTokenReleased(
             beneficiary,
             amount,
-            { transactionHash: ev?.transactionHash ?? null, blockNumber: ev?.blockNumber ?? null }
+            {
+                transactionHash: ev?.log?.transactionHash ?? null,
+                blockNumber: ev?.log?.blockNumber ?? null
+            }
         );
     });
 }

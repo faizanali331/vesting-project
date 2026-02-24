@@ -15,10 +15,10 @@ async function main() {
 
     const amount = ethers.parseUnits("1000", 18);
 
-    console.log("Approving tokens for vesting contract...");
-    const approveTx = await token.approve(vestingAddress, amount);
-    await approveTx.wait();
-    console.log(" Approved");
+    // console.log("Approving tokens for vesting contract...");
+    // const approveTx = await token.approve(vestingAddress, amount);
+    // await approveTx.wait();
+    // console.log(" Approved");
 
     console.log("Transferring tokens to vesting contract...");
     const transferTx = await token.transfer(vestingAddress, amount);
